@@ -1,10 +1,10 @@
 const START = 254032
 const END = 789860
 
-function* range(start, end) {
-    for (let i = start; i <= end; i++) {
-        yield i;
-    }
+function * range (start, end) {
+  for (let i = start; i <= end; i++) {
+    yield i
+  }
 }
 
 function sixDigitCriteria (x) {
@@ -17,7 +17,7 @@ function twoAdjacentDigits (x) {
 }
 
 function exactlyTwoAdjacentDigits (x) {
-  return twoAdjacentDigits(x) && Object.values(x.toString().split('').reduce((a, b) => {a[b] ? a[b]++ : a[b] = 1; return a}, {})).some(a => a === 2)
+  return twoAdjacentDigits(x) && Object.values(x.toString().split('').reduce((a, b) => { a[b] ? a[b]++ : a[b] = 1; return a }, {})).some(a => a === 2)
 }
 
 function digitsIncrease (x) {
@@ -29,7 +29,7 @@ function meetsCriteria (criteria, x) {
 }
 
 function one () {
-  const criteria = [/*sixDigitCriteria,*/ twoAdjacentDigits, digitsIncrease]
+  const criteria = [twoAdjacentDigits, digitsIncrease]
   return [...range(START, END)].filter(x => meetsCriteria(criteria, x)).length
 }
 

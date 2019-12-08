@@ -4,7 +4,7 @@ const { promisify } = require('util')
 const readFileAsync = promisify(fs.readFile)
 
 function readPuzzleInput () {
-  return readFileAsync('input', {encoding: 'utf8'})
+  return readFileAsync('input', { encoding: 'utf8' })
 }
 
 function parsePuzzleInput (input) {
@@ -25,7 +25,7 @@ function applyOneStep (input, index) {
   } else if (instruction === 99) {
     return { output: output, halt: true }
   } else {
-    throw Exception('Invalid opcode')
+    throw Error('Invalid opcode')
   }
 
   return { output: output, halt: false }
