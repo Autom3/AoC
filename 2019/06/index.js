@@ -8,7 +8,7 @@ function readPuzzleInput () {
 }
 
 function parsePuzzleInput (input) {
-  return input.split('\n').map(s => {const split = s.split(')'); return {parent: split[0], child: split[1]}})
+  return input.split('\n').filter(line => line).map(s => { const split = s.split(')'); return { parent: split[0], child: split[1] } })
 }
 
 function Universe () {
@@ -35,7 +35,21 @@ function Universe () {
   }
 
   this.countOrbits = () => {
-    return this.planets['COM'].countOrbits()
+    return this.planets['COM'].countOrbits(0)
+  }
+
+  this.countTransfers = () => {
+    const youPath = this.planets['YOU'].getPathToRoot()
+    const sanPath = this.planets['SAN'].getPathToRoot()
+
+    let i
+    for (i = 0; i < Math.min(youPath.length, sanPath.length); i++) {
+      if (youPath[i] !== sanPath[i]) {
+        break
+      }
+    }
+
+    return (youPath.length - i - 1) + (sanPath.length - i - 1)
   }
 }
 
@@ -51,30 +65,24 @@ function Planet (name) {
   this.name = name
   this.childOrbits = []
 
-  this.countOrbits = () => {return this.childOrbits.reduce((a, b) => a.parent.childOrbits() + b.parent.childOrbits())}
-}
+  this.countOrbits = (x) => x + this.childOrbits.map(childOrbit => childOrbit.child.countOrbits(1 + x)).reduce((a, b) => a + b, 0)
 
-function applyOrbitsToPlanets (orbits) {
-  orbits.forEach(orbit => {
-    orbit.parent.childOrbits.push(orbit)
-  })
-
-  return orbits
+  this.getPathToRoot = () => this.parentOrbit ? this.parentOrbit.parent.getPathToRoot().concat(this) : [this]
 }
 
 async function one () {
-  // const input = await readPuzzleInput()
-  const input = `COM)B
-B)C
-C)D
-D)E
-E)F
-B)G
-G)H
-D)I
-E)J
-J)K
-K)L`
+  const input = await readPuzzleInput()
+//   const input = `COM)B
+// B)C
+// C)D
+// D)E
+// E)F
+// B)G
+// G)H
+// D)I
+// E)J
+// J)K
+// K)L`
 
   const parsedInput = parsePuzzleInput(input)
 
@@ -84,4 +92,29 @@ K)L`
   return universe.countOrbits()
 }
 
-one().then(console.log) // .then(two).then(console.log)
+async function two () {
+  const input = await readPuzzleInput()
+//   const input = `COM)B
+// B)C
+// C)D
+// D)E
+// E)F
+// B)G
+// G)H
+// D)I
+// E)J
+// J)K
+// K)L
+// K)YOU
+// I)SAN`
+
+  const parsedInput = parsePuzzleInput(input)
+
+  const universe = new Universe()
+  universe.parseOrbits(parsedInput)
+
+  return universe.countTransfers()
+}
+
+// one().then(console.log) // .then(two).then(console.log)
+two().then(console.log) // .then(two).then(console.log)
