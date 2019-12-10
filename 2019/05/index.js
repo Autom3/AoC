@@ -203,5 +203,4 @@ async function two () {
   return output
 }
 
-// one().then(console.log)// .then(two).then(console.log)
-two().then(console.log)
+one().then(console.log).then(two).then(console.log)
