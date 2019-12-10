@@ -3,34 +3,34 @@ const { promisify } = require('util')
 
 const readFileAsync = promisify(fs.readFile)
 
-const CC_RESET = "\x1b[0m"
-const CC_BRIGHT = "\x1b[1m"
-const CC_DIM = "\x1b[2m"
-const CC_UNDERSCORE = "\x1b[4m"
-const CC_BLINK = "\x1b[5m"
-const CC_REVERSE = "\x1b[7m"
-const CC_HIDDEN = "\x1b[8m"
+const CC_RESET = '\x1b[0m'
+// const CC_BRIGHT = '\x1b[1m'
+// const CC_DIM = '\x1b[2m'
+// const CC_UNDERSCORE = '\x1b[4m'
+// const CC_BLINK = '\x1b[5m'
+// const CC_REVERSE = '\x1b[7m'
+// const CC_HIDDEN = '\x1b[8m'
 
-const CC_FGBLACK = "\x1b[30m"
-const CC_FGRED = "\x1b[31m"
-const CC_FGGREEN = "\x1b[32m"
-const CC_FGYELLOW = "\x1b[33m"
-const CC_FGBLUE = "\x1b[34m"
-const CC_FGMAGENTA = "\x1b[35m"
-const CC_FGCYAN = "\x1b[36m"
-const CC_FGWHITE = "\x1b[37m"
+const CC_FGBLACK = '\x1b[30m'
+const CC_FGRED = '\x1b[31m'
+const CC_FGGREEN = '\x1b[32m'
+const CC_FGYELLOW = '\x1b[33m'
+// const CC_FGBLUE = '\x1b[34m'
+// const CC_FGMAGENTA = '\x1b[35m'
+// const CC_FGCYAN = '\x1b[36m'
+// const CC_FGWHITE = '\x1b[37m'
 
-const CC_BGBLACK = "\x1b[40m"
-const CC_BGRED = "\x1b[41m"
-const CC_BGGREEN = "\x1b[42m"
-const CC_BGYELLOW = "\x1b[43m"
-const CC_BGBLUE = "\x1b[44m"
-const CC_BGMAGENTA = "\x1b[45m"
-const CC_BGCYAN = "\x1b[46m"
-const CC_BGWHITE = "\x1b[47m"
+// const CC_BGBLACK = '\x1b[40m'
+// const CC_BGRED = '\x1b[41m'
+// const CC_BGGREEN = '\x1b[42m'
+// const CC_BGYELLOW = '\x1b[43m'
+// const CC_BGBLUE = '\x1b[44m'
+// const CC_BGMAGENTA = '\x1b[45m'
+// const CC_BGCYAN = '\x1b[46m'
+const CC_BGWHITE = '\x1b[47m'
 
 function readPuzzleInput () {
-  return readFileAsync('input', {encoding: 'utf8'})
+  return readFileAsync('input', { encoding: 'utf8' })
 }
 
 function parsePuzzleInput (input) {
@@ -44,13 +44,13 @@ function parsePuzzleInput (input) {
 function translateDirection (direction) {
   switch (direction) {
     case 'R':
-      return {x: 1, y: 0}
+      return { x: 1, y: 0 }
     case 'U':
-      return {x: 0, y: 1}
+      return { x: 0, y: 1 }
     case 'L':
-      return {x: -1, y: 0}
+      return { x: -1, y: 0 }
     case 'D':
-      return {x: 0, y: -1}
+      return { x: 0, y: -1 }
   }
 }
 
@@ -61,14 +61,14 @@ function registerWirePosition (playfield, x, y, wire, direction, total) {
   if (playfield[x][y] === undefined) {
     playfield[x][y] = []
   }
-  playfield[x][y].push({wire: wire, direction: direction, total: total})
+  playfield[x][y].push({ wire: wire, direction: direction, total: total })
 }
 
 function registerIntersection (playfield, x, y, intersections) {
   if (playfield[x][y].length > 1 && !(x === 0 && y === 0)) {
     const wireSet = new Set(playfield[x][y].map(position => position.wire))
     if (wireSet.size > 1) {
-      intersections.push({x: x, y: y})
+      intersections.push({ x: x, y: y })
     }
   }
 }
@@ -81,7 +81,7 @@ function findFirstIntersection (playfield, intersections) {
   return intersections.reduce((intersection, minimum) => playfield[intersection.x][intersection.y].reduce((a, b) => a.total + b.total) < playfield[minimum.x][minimum.y].reduce((a, b) => a.total + b.total) ? intersection : minimum)
 }
 
-function putWiresOnPlayfield(playfield, parsedInput) {
+function putWiresOnPlayfield (playfield, parsedInput) {
   const intersections = []
   const totals = []
 
@@ -170,12 +170,9 @@ function printPlayfield (playfield) {
 
 async function one () {
   const input = await readPuzzleInput()
-//   const input = `R8,U5,L5,D3
-// U7,R6,D4,L4`
-//   const input = `R75,D30,R83,U83,L12,D49,R71,U7,L72
-// U62,R66,U55,R34,D71,R55,D58,R83`
-//   const input = `R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
-// U98,R91,D20,R16,D67,R40,U7,R15,U6,R7`
+  // const input = `R8,U5,L5,D3\nU7,R6,D4,L4`
+  // const input = `R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83`
+  // const input = `R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7`
   const parsedInput = parsePuzzleInput(input)
 
   const playfield = {}
@@ -190,12 +187,9 @@ async function one () {
 
 async function two () {
   const input = await readPuzzleInput()
-//   const input = `R8,U5,L5,D3
-// U7,R6,D4,L4`
-//   const input = `R75,D30,R83,U83,L12,D49,R71,U7,L72
-// U62,R66,U55,R34,D71,R55,D58,R83`
-//   const input = `R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51
-// U98,R91,D20,R16,D67,R40,U7,R15,U6,R7`
+  // const input = `R8,U5,L5,D3\nU7,R6,D4,L4`
+  // const input = `R75,D30,R83,U83,L12,D49,R71,U7,L72\nU62,R66,U55,R34,D71,R55,D58,R83`
+  // const input = `R98,U47,R26,D63,R33,U87,L62,D20,R33,U53,R51\nU98,R91,D20,R16,D67,R40,U7,R15,U6,R7`
   const parsedInput = parsePuzzleInput(input)
 
   const playfield = {}
