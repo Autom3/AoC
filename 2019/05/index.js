@@ -52,6 +52,27 @@ const instructions = {
     },
     jump: 1
   },
+  6: {
+    f: (c, i) => {
+      if (c === 0) {
+        return { jump: i }
+      }
+      return {}
+    },
+    jump: 1
+  },
+  7: {
+    f: (a, b, out) => {
+      return { output: a < b ? 1 : 0, write: out }
+    },
+    out: 2
+  },
+  8: {
+    f: (a, b, out) => {
+      return { output: a === b ? 1 : 0, write: out }
+    },
+    out: 2
+  },
   99: {
     f: () => {
       return { halt: true }
@@ -93,7 +114,7 @@ function getParams (program, index, instruction, inputBuffer) {
       if (i === instruction.instruction.input) {
         return inputBuffer.pop(0)
       }
-      if (i === instruction.instruction.out || i === instruction.instruction.jump) {
+      if (i === instruction.instruction.out) {
         return program[index + 1 + i]
       } else {
         return getParam(program, program[index + 1 + i], paramMode)
@@ -168,12 +189,14 @@ async function one () {
 }
 
 async function two () {
-//   const input = await readPuzzleInput()
-//   const parsedInput = parsePuzzleInput(input)
+  const input = await readPuzzleInput()
+  const parsedInput = parsePuzzleInput(input)
 
-  // const parsedInput = [3,9,8,9,10,9,4,9,99,-1,8]
-  const parsedInput = [3,0,5,0,8,104,0,99,104,1,99]
-  const inputBuffer = [1]
+  // const parsedInput = [3,3,1107,-1,8,3,4,3,99]
+  // const parsedInput = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9]
+  // const parsedInput = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+
+  const inputBuffer = [5]
 
   const output = applySteps(parsedInput, inputBuffer)
 
