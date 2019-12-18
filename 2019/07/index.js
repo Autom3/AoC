@@ -112,7 +112,7 @@ function getParams (program, index, instruction, inputBuffer) {
   return {
     params: instruction.paramModes.map((paramMode, i) => {
       if (i === instruction.instruction.input) {
-        return inputBuffer.pop(0)
+        return inputBuffer.splice(0, 1)[0]
       }
       if (i === instruction.instruction.out) {
         return program[index + 1 + i]
@@ -150,7 +150,7 @@ function applyOneStep (program, index, inputBuffer) {
   return { program: outputProgram, halt: instructionOutput.halt, steps: instruction.instruction.f.length - (instruction.instruction.input ? 1 : 0), inputBuffer: inputBuffer, outputBuffer: outputBuffer, jump: instructionOutput.jump }
 }
 
-function applySteps (program, inputBuffer) {
+function * applySteps (program, inputBuffer) {
   let instructionPointer = 0
   let outputBuffer = []
 
@@ -158,6 +158,9 @@ function applySteps (program, inputBuffer) {
     const stepOutput = applyOneStep(program, instructionPointer, inputBuffer)
     inputBuffer = stepOutput.inputBuffer
     outputBuffer = outputBuffer.concat(stepOutput.outputBuffer)
+    if (outputBuffer.length > 0) {
+      yield { halt: false, inputBuffer: inputBuffer, outputBuffer: outputBuffer }
+    }
 
     if (stepOutput.halt) {
       return { halt: true, inputBuffer: inputBuffer, outputBuffer: outputBuffer }
@@ -176,52 +179,62 @@ function applySteps (program, inputBuffer) {
 }
 
 function permute (list) {
-  if (list.length === 1) {
-    console.log('len 1', list)
-    return [list]
-  } else {
-    console.log('len >1', list)
-    return list.map((x, i) => {
-      const newList = list.slice(0)
-      newList.splice(i, 1)
-      const permutations = permute(newList)
-      console.log('after permute', list, permutations, x)
-      console.log(permutations.map(l => l.concat(x)))
-      return permutations.map(l => l.concat(x))
+  return list.reduce(function innerPermute(res, item, key, arr) {
+    return res.concat(arr.length > 1 && arr.slice(0, key).concat(arr.slice(key + 1)).reduce(innerPermute, []).map((perm) => {
+      return [item].concat(perm)
+    }) || item)
+  }, [])
+}
+
+function feedbackLoop (program, phases) {
+  const initializedPrograms = phases.map(phase => {
+    const inputBuffer = [phase]
+    const initializedProgram = applySteps(program, inputBuffer)
+    return {input: inputBuffer, program: initializedProgram}
+  })
+  let programIndex = 0
+  let nextInput = 0
+  let output = {done: false}
+
+  while (!output.done || programIndex < phases.length - 1) {
+    if (nextInput) {
+      initializedPrograms[programIndex].input.push(nextInput)
+    }
+    output = initializedPrograms[programIndex].program.next()
+    initializedPrograms[programIndex].input = output.value.inputBuffer
+    programIndex = (programIndex + 1) % phases.length
+    output.value.inputBuffer.forEach(value => {
+      initializedPrograms[programIndex].input.push(value)
     })
+    nextInput = output.value.outputBuffer.pop()
   }
+
+  return initializedPrograms[programIndex].input[0]
 }
 
 async function one () {
-  // const input = await readPuzzleInput()
-  // const parsedInput = parsePuzzleInput(input)
+  const input = await readPuzzleInput()
+  const parsedInput = parsePuzzleInput(input)
 
-  const parsedInput = [3, 15, 3, 16, 1002, 16, 10, 16, 1, 16, 15, 15, 4, 15, 99, 0, 0]
+  // const parsedInput = [3,15,3,16,1002,16,10,16,1,16,15,15,4,15,99,0,0]
+  // const parsedInput = [3,23,3,24,1002,24,10,24,1002,23,-1,23,101,5,23,23,1,24,23,23,4,23,99,0,0]
+  // const parsedInput = [3,31,3,32,1002,32,10,32,1001,31,-2,31,1007,31,0,33,1002,33,7,33,1,33,31,31,1,32,31,31,4,31,99,0,0,0]
 
-  let inputBuffer = [4, 0]
-  let output = applySteps(parsedInput, inputBuffer)
-
-  const stuff = [...range(0, 2)]
-
-  // console.log(stuff)
-  console.log(permute(stuff))
-
-  return output
+  return permute([...range(0, 4)]).map(option => option.reduce((input, phase) => applySteps(parsedInput, [phase, input]).next().value.outputBuffer[0], 0)).reduce((a, b) => Math.max(a, b))
 }
 
 async function two () {
   const input = await readPuzzleInput()
   const parsedInput = parsePuzzleInput(input)
 
-  // const parsedInput = [3,3,1107,-1,8,3,4,3,99]
-  // const parsedInput = [3,12,6,12,15,1,13,14,13,4,13,99,-1,0,1,9]
-  // const parsedInput = [3,21,1008,21,8,20,1005,20,22,107,8,21,20,1006,20,31,1106,0,36,98,0,0,1002,21,125,20,4,20,1105,1,46,104,999,1105,1,46,1101,1000,1,20,4,20,1105,1,46,98,99]
+  // const parsedInput = [3,26,1001,26,-4,26,3,27,1002,27,2,27,1,27,26,27,4,27,1001,28,-1,28,1005,28,6,99,0,0,5]
+  // return feedbackLoop(parsedInput, [9,8,7,6,5])
 
-  const inputBuffer = [5]
+  // const parsedInput = [3,52,1001,52,-5,52,3,53,1,52,56,54,1007,54,5,55,1005,55,26,1001,54,-5,54,1105,1,12,1,53,54,53,1008,54,0,55,1001,55,1,55,2,53,55,53,4,53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10]
+  // return feedbackLoop(parsedInput, [9,7,8,5,6])
 
-  const output = applySteps(parsedInput, inputBuffer)
-
-  return output
+  return permute([...range(5, 9)]).map(phases => feedbackLoop(parsedInput, phases)).reduce((a, b) => Math.max(a, b))
 }
 
-one().then(console.log) // .then(two).then(console.log)
+// one().then(console.log) // .then(two).then(console.log)
+two().then(console.log)
