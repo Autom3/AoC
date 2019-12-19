@@ -236,5 +236,4 @@ async function two () {
   return permute([...range(5, 9)]).map(phases => feedbackLoop(parsedInput, phases)).reduce((a, b) => Math.max(a, b))
 }
 
-// one().then(console.log) // .then(two).then(console.log)
-two().then(console.log)
+one().then(console.log).then(two).then(console.log)
